@@ -6,7 +6,7 @@ license = "MIT"
 description = "A library for primality testing algorithms with benchmarking"
 repository = "https://github.com/Green-Mice/erato"
 readme = "README.md"
-keywords = ["primality", "prime", "algorithms", "benchmarks", "sieve", "miller", "rabin", "zeta", "riemann"]
+keywords = ["primality", "prime", "algorithms", "zeta", "riemann"]
 categories = ["algorithms", "mathematics"]
 
 
