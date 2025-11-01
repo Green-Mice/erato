@@ -1,0 +1,25 @@
+[package]
+name = "erato"
+version = "0.1.0"
+edition = "2024"
+license = "MIT"
+description = "A library for primality testing algorithms with benchmarking"
+repository = "https://github.com/Green-Mice/erato"
+readme = "README.md"
+keywords = ["primality", "prime", "algorithms", "benchmarks", "sieve", "miller", "rabin", "zeta", "riemann"]
+categories = ["algorithms", "mathematics"]
+
+
+[lib]
+name = "erato"
+path = "src/lib.rs"
+
+[[bench]]
+name = "primality_bench"
+harness = false
+
+[dependencies]
+num-traits = "0.2.19"
+
+[dev-dependencies]
+criterion = { version = "0.7.0", features = ["html_reports"] }
