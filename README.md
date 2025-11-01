@@ -177,4 +177,5 @@ Contributions are welcome! Please feel free to submit a Pull Request.
 
 - [Miller-Rabin Primality Test](https://en.wikipedia.org/wiki/Miller%E2%80%93Rabin_primality_test)
 - [Sieve of Eratosthenes](https://en.wikipedia.org/wiki/Sieve_of_Eratosthenes)
+- [Riemann hypothesis](https://en.wikipedia.org/wiki/Riemann_hypothesis)
 - [Criterion.rs](https://bheisler.github.io/criterion.rs/book/)
