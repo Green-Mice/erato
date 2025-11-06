@@ -1,6 +1,6 @@
 [package]
 name = "erato"
-version = "0.1.0"
+version = "0.2.0"
 edition = "2024"
 license = "MIT"
 description = "A library for primality testing algorithms with benchmarking"
@@ -12,6 +12,7 @@ categories = ["algorithms", "mathematics"]
 
 [lib]
 name = "erato"
+crate-type = ["cdylib"]
 path = "src/lib.rs"
 
 [[bench]]
@@ -19,6 +20,7 @@ name = "primality_bench"
 harness = false
 
 [dependencies]
+wasm-bindgen = "0.2"
 num-traits = "0.2.19"
 
 [dev-dependencies]

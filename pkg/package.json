@@ -1,0 +1,28 @@
+{
+  "name": "erato",
+  "type": "module",
+  "description": "A library for primality testing algorithms with benchmarking",
+  "version": "0.2.0",
+  "license": "MIT",
+  "repository": {
+    "type": "git",
+    "url": "https://github.com/Green-Mice/erato"
+  },
+  "files": [
+    "erato_bg.wasm",
+    "erato.js",
+    "erato.d.ts"
+  ],
+  "main": "erato.js",
+  "types": "erato.d.ts",
+  "sideEffects": [
+    "./snippets/*"
+  ],
+  "keywords": [
+    "primality",
+    "prime",
+    "algorithms",
+    "zeta",
+    "riemann"
+  ]
+}
