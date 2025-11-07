@@ -12,7 +12,7 @@ categories = ["algorithms", "mathematics"]
 
 [lib]
 name = "erato"
-crate-type = ["cdylib"]
+crate-type = ["cdylib", "rlib"]
 path = "src/lib.rs"
 
 [[bench]]

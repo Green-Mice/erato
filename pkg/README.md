@@ -164,6 +164,48 @@ fn main() {
 ```bash
 cargo run --example zeta_primality
 ```
+## WebAssembly Demo
+
+This project includes a web interface that uses the Zeta primality algorithm compiled to WebAssembly for maximum performance.
+
+### Prerequisites
+
+Install `wasm-pack`:
+
+```bash
+curl https://rustwasm.github.io/wasm-pack/installer/init.sh -sSf | sh
+```
+
+### Building
+
+Compile the Rust code to WebAssembly:
+
+```bash
+wasm-pack build --target web --release
+```
+
+This generates the `pkg/` directory containing:
+- `erato.js` - JavaScript bindings
+- `erato_bg.wasm` - Compiled WebAssembly module
+
+### Running
+
+Serve the files with any HTTP server:
+
+```bash
+python3 -m http.server 8080
+```
+
+Then open `http://localhost:8080` in your browser.
+
+The `index.html` automatically loads the WASM module:
+
+```javascript
+const module = await import('./pkg/erato.js');
+await module.default();
+```
+
+![WebAssembly Demo](sample1.png)
 
 ## License
 
