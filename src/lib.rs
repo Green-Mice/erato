@@ -23,3 +23,22 @@ pub use algorithms::{PrimalityTest, PrimalityRegistry};
 pub fn is_prime(n: u64) -> bool {
     is_prime_zeta(n)
 }
+
+#[wasm_bindgen]
+pub fn prime_count_data(max_n: u64) -> Vec<u64> {
+    let mut data = Vec::new();
+    let mut count = 0u64;
+    
+    for n in 2..=max_n {
+        if is_prime_zeta(n) {
+            count += 1;
+        }
+        let step = if max_n > 10000 { 100 } else if max_n > 1000 { 10 } else { 1 };
+        if n % step == 0 || n == max_n {
+            data.push(n);
+            data.push(count);
+        }
+    }
+    
+    data
+}

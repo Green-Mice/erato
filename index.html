@@ -14,10 +14,11 @@
             font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif;
             background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
             min-height: 100vh;
-            display: flex;
-            justify-content: center;
-            align-items: center;
             padding: 20px;
+            display: flex;
+            flex-direction: column;
+            align-items: center;
+            gap: 20px;
         }
         .container {
             background: white;
@@ -27,11 +28,23 @@
             width: 100%;
             box-shadow: 0 20px 60px rgba(0, 0, 0, 0.3);
         }
-        h1 {
+        .graph-container {
+            background: white;
+            border-radius: 20px;
+            padding: 40px;
+            max-width: 900px;
+            width: 100%;
+            box-shadow: 0 20px 60px rgba(0, 0, 0, 0.3);
+        }
+        h1, h2 {
             color: #667eea;
             margin-bottom: 30px;
             font-size: 2em;
             text-align: center;
+        }
+        h2 {
+            font-size: 1.5em;
+            margin-bottom: 20px;
         }
         .input-group {
             margin-bottom: 20px;
@@ -66,7 +79,7 @@
             cursor: pointer;
             transition: transform 0.2s;
         }
-        button:hover {
+        button:hover:not(:disabled) {
             transform: translateY(-2px);
         }
         button:disabled {
@@ -90,15 +103,38 @@
             border: 2px solid #dc3545;
             color: #721c24;
         }
+        .result.error {
+            background: #fff3cd;
+            border: 2px solid #ffc107;
+            color: #856404;
+        }
         .result-title {
             font-size: 1.5em;
             font-weight: bold;
         }
-        .status {
+        canvas {
+            width: 100%;
+            height: 400px;
+            border: 1px solid #ddd;
+            border-radius: 8px;
+            margin-top: 20px;
+        }
+        .loading {
             text-align: center;
-            margin-top: 15px;
-            color: #666;
-            font-size: 0.9em;
+            color: #667eea;
+            font-weight: 600;
+            margin-top: 10px;
+        }
+        .stats {
+            margin-top: 20px;
+            padding: 15px;
+            background: #f0f4ff;
+            border-radius: 8px;
+            display: none;
+        }
+        .stats p {
+            margin: 5px 0;
+            color: #333;
         }
     </style>
 </head>
@@ -119,8 +155,33 @@
         </button>
         <div id="result" class="result"></div>
     </div>
+
+    <div class="graph-container">
+        <h2>Prime Counting Function π(x)</h2>
+        <div class="input-group">
+            <label for="maxInput">Maximum number:</label>
+            <input
+                type="number"
+                id="maxInput"
+                placeholder="e.g. 100, 1000, 10000..."
+                min="2"
+                max="100000"
+                value="1000"
+            >
+        </div>
+        <button id="graphButton" onclick="generateGraph()">
+            Generate Graph
+        </button>
+        <div id="loading" class="loading" style="display: none;">
+            Computing primes... Please wait.
+        </div>
+        <div id="stats" class="stats"></div>
+        <canvas id="primeCanvas"></canvas>
+    </div>
+
     <script type="module">
         let wasm = null;
+        
         async function init() {
             try {
                 const module = await import('./pkg/erato.js');
@@ -128,6 +189,7 @@
                 wasm = module;
             } catch (err) {
                 console.error('WASM Error:', err);
+                alert('Failed to load WASM module');
             }
         }
 
@@ -136,16 +198,23 @@
             const result = document.getElementById('result');
             const button = document.getElementById('testButton');
             const n = parseInt(input.value);
+            
             if (!n || n < 2) {
-                alert('Please enter a number ≥ 2');
+                result.className = 'result error';
+                result.innerHTML = '<div class="result-title">⚠️ Please enter a number ≥ 2</div>';
+                result.style.display = 'block';
                 return;
             }
             if (!wasm) {
-                alert('WASM not loaded');
+                result.className = 'result error';
+                result.innerHTML = '<div class="result-title">⚠️ WASM not loaded</div>';
+                result.style.display = 'block';
                 return;
             }
+            
             button.disabled = true;
             result.style.display = 'none';
+            
             setTimeout(() => {
                 const isPrime = wasm.is_prime(BigInt(n));
                 result.className = `result ${isPrime ? 'prime' : 'composite'}`;
@@ -155,12 +224,171 @@
             }, 10);
         };
 
+        window.generateGraph = function() {
+            const input = document.getElementById('maxInput');
+            const button = document.getElementById('graphButton');
+            const loading = document.getElementById('loading');
+            const stats = document.getElementById('stats');
+            const maxN = parseInt(input.value);
+            
+            if (!maxN || maxN < 2) {
+                stats.innerHTML = '<p style="color: #856404;"><strong>⚠️ Please enter a number ≥ 2</strong></p>';
+                stats.style.display = 'block';
+                return;
+            }
+            if (maxN > 100000) {
+                stats.innerHTML = '<p style="color: #856404;"><strong>⚠️ Maximum value is 100000 (for performance)</strong></p>';
+                stats.style.display = 'block';
+                return;
+            }
+            if (!wasm) {
+                stats.innerHTML = '<p style="color: #856404;"><strong>⚠️ WASM not loaded</strong></p>';
+                stats.style.display = 'block';
+                return;
+            }
+            
+            button.disabled = true;
+            loading.style.display = 'block';
+            stats.style.display = 'none';
+            
+            setTimeout(() => {
+                const startTime = performance.now();
+                const data = wasm.prime_count_data(BigInt(maxN));
+                const endTime = performance.now();
+                const duration = (endTime - startTime).toFixed(2);
+                
+                const points = [];
+                for (let i = 0; i < data.length; i += 2) {
+                    points.push({
+                        x: Number(data[i]),
+                        y: Number(data[i + 1])
+                    });
+                }
+                
+                const finalCount = points[points.length - 1].y;
+                
+                stats.innerHTML = `
+                    <p><strong>Total primes found:</strong> ${finalCount}</p>
+                    <p><strong>Range:</strong> 2 to ${maxN.toLocaleString()}</p>
+                    <p><strong>Computation time:</strong> ${duration} ms</p>
+                    <p><strong>Density:</strong> ${(finalCount / maxN * 100).toFixed(2)}%</p>
+                `;
+                stats.style.display = 'block';
+                
+                drawGraph(points, maxN);
+                
+                loading.style.display = 'none';
+                button.disabled = false;
+            }, 50);
+        };
+
+        function drawGraph(points, maxN) {
+            const canvas = document.getElementById('primeCanvas');
+            const ctx = canvas.getContext('2d');
+            
+            canvas.width = canvas.offsetWidth;
+            canvas.height = 400;
+            
+            const width = canvas.width;
+            const height = canvas.height;
+            const padding = 60;
+            
+            ctx.clearRect(0, 0, width, height);
+            
+            const maxY = points[points.length - 1].y;
+            
+            const scaleX = (x) => padding + (x / maxN) * (width - 2 * padding);
+            const scaleY = (y) => height - padding - (y / maxY) * (height - 2 * padding);
+            
+            ctx.strokeStyle = '#ddd';
+            ctx.lineWidth = 1;
+            
+            const numYTicks = 5;
+            for (let i = 0; i <= numYTicks; i++) {
+                const y = height - padding - (i / numYTicks) * (height - 2 * padding);
+                const value = Math.round((i / numYTicks) * maxY);
+                
+                ctx.beginPath();
+                ctx.moveTo(padding, y);
+                ctx.lineTo(width - padding, y);
+                ctx.stroke();
+                
+                ctx.fillStyle = '#666';
+                ctx.font = '11px Segoe UI';
+                ctx.textAlign = 'right';
+                ctx.fillText(value.toLocaleString(), padding - 8, y + 4);
+            }
+            
+            const numXTicks = 5;
+            for (let i = 0; i <= numXTicks; i++) {
+                const x = padding + (i / numXTicks) * (width - 2 * padding);
+                const value = Math.round((i / numXTicks) * maxN);
+                
+                ctx.beginPath();
+                ctx.moveTo(x, height - padding);
+                ctx.lineTo(x, padding);
+                ctx.stroke();
+                
+                ctx.fillStyle = '#666';
+                ctx.font = '11px Segoe UI';
+                ctx.textAlign = 'center';
+                ctx.fillText(value.toLocaleString(), x, height - padding + 20);
+            }
+            
+            ctx.strokeStyle = '#333';
+            ctx.lineWidth = 2;
+            ctx.beginPath();
+            ctx.moveTo(padding, height - padding);
+            ctx.lineTo(width - padding, height - padding);
+            ctx.lineTo(width - padding, padding);
+            ctx.stroke();
+            
+            ctx.strokeStyle = '#667eea';
+            ctx.lineWidth = 2.5;
+            ctx.beginPath();
+            
+            for (let i = 0; i < points.length; i++) {
+                const x = scaleX(points[i].x);
+                const y = scaleY(points[i].y);
+                
+                if (i === 0) {
+                    ctx.moveTo(x, y);
+                } else {
+                    const prevX = scaleX(points[i - 1].x);
+                    const prevY = scaleY(points[i - 1].y);
+                    ctx.lineTo(x, prevY);
+                    ctx.lineTo(x, y);
+                }
+            }
+            ctx.stroke();
+            
+            ctx.fillStyle = 'rgba(102, 126, 234, 0.1)';
+            ctx.lineTo(scaleX(points[points.length - 1].x), height - padding);
+            ctx.lineTo(padding, height - padding);
+            ctx.closePath();
+            ctx.fill();
+            
+            ctx.fillStyle = '#333';
+            ctx.font = 'bold 13px Segoe UI';
+            ctx.textAlign = 'center';
+            ctx.fillText('n', width / 2, height - 5);
+            
+            ctx.save();
+            ctx.translate(15, height / 2);
+            ctx.rotate(-Math.PI / 2);
+            ctx.fillText('π(n)', 0, 0);
+            ctx.restore();
+        }
+
         document.getElementById('numberInput').addEventListener('keypress', (e) => {
             if (e.key === 'Enter') testPrime();
+        });
+
+        document.getElementById('maxInput').addEventListener('keypress', (e) => {
+            if (e.key === 'Enter') generateGraph();
         });
 
         init();
     </script>
 </body>
 </html>
-

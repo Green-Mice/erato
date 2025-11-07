@@ -1,13 +1,16 @@
 /* tslint:disable */
 /* eslint-disable */
 export function is_prime(n: bigint): boolean;
+export function prime_count_data(max_n: bigint): BigUint64Array;
 
 export type InitInput = RequestInfo | URL | Response | BufferSource | WebAssembly.Module;
 
 export interface InitOutput {
   readonly memory: WebAssembly.Memory;
   readonly is_prime: (a: bigint) => number;
+  readonly prime_count_data: (a: bigint) => [number, number];
   readonly __wbindgen_externrefs: WebAssembly.Table;
+  readonly __wbindgen_free: (a: number, b: number, c: number) => void;
   readonly __wbindgen_start: () => void;
 }
 
