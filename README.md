@@ -205,7 +205,7 @@ const module = await import('./pkg/erato.js');
 await module.default();
 ```
 
-![WebAssembly Demo](https://github.com/Green-Mice/erato/sample1.png)
+![WebAssembly Demo](sample1.png)
 
 ## License
 
